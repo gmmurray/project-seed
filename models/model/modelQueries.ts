@@ -3,9 +3,8 @@ import {
   useQueryBuilder,
 } from '../../lib/helpers/reactQueryHelpers';
 
-import { ApiHandlerResponse } from '../../lib/types/apiHandler';
+import { IApiHandlerResponse } from '../../lib/apiHandler/apiHandlerTypes';
 import ReactQueryKeys from 'react-query-keys';
-import { UseQueryResult } from '@tanstack/react-query';
 import axios from 'axios';
 
 const keyConfig = {
@@ -23,7 +22,7 @@ export const useGetModelQuery = (modelId: string, enabled: boolean) =>
     modelQueryKeys.key('single', { modelId }),
     enabled,
     async () => {
-      const res = await axios.get<ApiHandlerResponse<any>>('/api/model');
+      const res = await axios.get<IApiHandlerResponse<any>>('/api/model');
 
       return res.data.data;
     },
@@ -39,7 +38,7 @@ export const useCreateModelMutation = () =>
   useMutationBuilder<MutationTypes['create'], string>(
     [modelQueryKeys.all()],
     async model => {
-      const res = await axios.post<ApiHandlerResponse<string>>(
+      const res = await axios.post<IApiHandlerResponse<string>>(
         '/api/model',
         model,
       );

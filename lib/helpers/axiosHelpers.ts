@@ -1,4 +1,4 @@
-import { ApiHandlerErrorFactory } from '../types/apiHandler';
+import { ApiHandlerErrorFactory } from '../apiHandler/apiHandlerError';
 import { AxiosError } from 'axios';
 
 export const handleAxiosError = (error: unknown) => {

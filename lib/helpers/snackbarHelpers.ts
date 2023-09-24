@@ -1,4 +1,4 @@
-import { ApiHandlerError } from '../types/apiHandler';
+import { ApiHandlerError } from '../apiHandler/apiHandlerError';
 import { SnackbarAlertContextValue } from '../../components/layout/SnackbarProvider';
 
 export const sendResolvedSnackbarError = (

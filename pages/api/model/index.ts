@@ -1,4 +1,4 @@
-import { ApiHandler } from '../../../lib/types/apiHandler';
+import { ApiHandler } from '../../../lib/apiHandler/apiHandler';
 import { ModelRepository } from '../../../models/model/modelRepository';
 
 class RouteHandler extends ApiHandler {

@@ -1,19 +1,14 @@
 import * as yup from 'yup';
 
 import { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
-import { RequestMethod, isRequestMethod } from './requestTypes';
 import { Session, getSession, withApiAuthRequired } from '@auth0/nextjs-auth0';
 
-import { isString } from './typeGuards';
+import { ApiHandlerError } from './apiHandlerError';
+import { ApiHandlerResponse } from './apiHandlerResponse';
+import { IApiHandler } from './apiHandlerTypes';
+import { isRequestMethod } from '../types/requestTypes';
+import { isString } from '../types/typeGuards';
 import jwt from 'jsonwebtoken';
-
-type RequestHandler = {
-  [method in RequestMethod]?: NextApiHandler;
-};
-
-export interface IApiHandler extends RequestHandler {
-  requiresAuth: boolean;
-}
 
 export abstract class ApiHandler implements IApiHandler {
   public GET: IApiHandler['GET'];
@@ -185,76 +180,4 @@ export abstract class ApiHandler implements IApiHandler {
       ? decodedToken['permissions'] ?? []
       : [];
   };
-}
-
-export class ApiHandlerResponse<T> {
-  constructor(public data?: T, public error?: ApiHandlerError) {
-    this.data = data;
-    this.error = error;
-  }
-}
-
-export const apiHandlerErrorTypes = {
-  validation: {
-    title: 'Validation error',
-  },
-  badRequest: {
-    title: 'Bad request',
-  },
-  notFound: {
-    title: 'Not found',
-  },
-  internal: {
-    title: 'Internal error',
-  },
-  unknown: {
-    title: 'Unexpected error',
-  },
-} as const;
-
-export type ApiHandlerErrorType = keyof typeof apiHandlerErrorTypes;
-
-export class ApiHandlerError {
-  public type: ApiHandlerErrorType;
-  public message?: string;
-  constructor(type: ApiHandlerErrorType, message?: string) {
-    this.type = type;
-    this.message = message;
-  }
-
-  public get title(): string {
-    let title: string;
-    if (
-      apiHandlerErrorTypes[this.type] &&
-      apiHandlerErrorTypes[this.type].title
-    ) {
-      title = apiHandlerErrorTypes[this.type].title;
-    } else {
-      title = apiHandlerErrorTypes.unknown.title;
-    }
-
-    return title;
-  }
-}
-
-const isApiHandlerErrorType = (type: unknown): type is ApiHandlerErrorType => {
-  return (
-    typeof type === 'string' &&
-    apiHandlerErrorTypes[type as ApiHandlerErrorType] !== undefined &&
-    apiHandlerErrorTypes[type as ApiHandlerErrorType].title !== undefined
-  );
-};
-
-export abstract class ApiHandlerErrorFactory {
-  public static parseError(error: any): ApiHandlerError {
-    if (
-      error &&
-      isApiHandlerErrorType(error.type) &&
-      (typeof error.message === 'string' || !error.message)
-    ) {
-      return new ApiHandlerError(error.type, error.message);
-    }
-
-    return new ApiHandlerError('unknown');
-  }
 }
