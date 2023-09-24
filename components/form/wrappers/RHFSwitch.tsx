@@ -8,18 +8,27 @@ type Props = {
   label: string;
   control: Control<any>;
   inputProps?: SwitchProps;
+  helperText?: string;
 };
 
-export default function RHFSwitch({ name, label, control, inputProps }: Props) {
+export default function RHFSwitch({
+  name,
+  label,
+  control,
+  inputProps,
+  helperText,
+}: Props) {
   return (
     <Controller
       name={name}
       control={control}
-      render={({ field }) => {
+      render={({ field, fieldState: { error } }) => {
         return (
           <SwitchInput
             {...field}
             label={label}
+            error={!!error}
+            helperText={error?.message ?? helperText}
             switchProps={{
               ...inputProps,
             }}

@@ -1,4 +1,10 @@
-import { FormControlLabel, Switch, SwitchProps } from '@mui/material';
+import {
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  Switch,
+  SwitchProps,
+} from '@mui/material';
 import React, { useCallback } from 'react';
 
 type Props = {
@@ -7,6 +13,8 @@ type Props = {
   value: boolean;
   onChange: (value: boolean) => any;
   switchProps?: SwitchProps;
+  helperText?: string;
+  error?: boolean;
 };
 
 export default function SwitchInput({
@@ -15,6 +23,8 @@ export default function SwitchInput({
   value,
   onChange,
   switchProps,
+  helperText,
+  error = false,
 }: Props) {
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,16 +33,21 @@ export default function SwitchInput({
     [onChange],
   );
   return (
-    <FormControlLabel
-      label={label}
-      control={
-        <Switch
-          {...(switchProps ?? {})}
-          checked={value}
-          onChange={handleChange}
-          name={name}
-        />
-      }
-    />
+    <FormControl>
+      <FormControlLabel
+        label={label}
+        control={
+          <Switch
+            {...(switchProps ?? {})}
+            checked={value}
+            onChange={handleChange}
+            name={name}
+          />
+        }
+      />
+      {helperText && (
+        <FormHelperText error={error}>{helperText}</FormHelperText>
+      )}
+    </FormControl>
   );
 }
