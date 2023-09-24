@@ -62,17 +62,43 @@ export abstract class ApiHandler implements IApiHandler {
 
   public static noContent = (res: NextApiResponse) => res.status(204).send('');
 
-  public static badRequest = (
+  public static sendErrorResponse = (
     res: NextApiResponse,
-    error?: string,
-    data?: any,
-  ) => res.status(400).json({ error: error ?? 'Bad request', data });
+    status: number,
+    error: ApiHandlerError,
+  ) => res.status(status).json(new ApiHandlerResponse(undefined, error));
 
-  public static notFound = (res: NextApiResponse, error?: string) =>
-    res.status(404).json({ error: error ?? 'Not found' });
+  public static badRequest = (res: NextApiResponse, message?: string) => {
+    return ApiHandler.sendErrorResponse(
+      res,
+      400,
+      new ApiHandlerError('badRequest', message),
+    );
+  };
 
-  public static internalError = (res: NextApiResponse, error?: string) =>
-    res.status(500).json({ error: error ?? 'Not found' });
+  public static notFound = (res: NextApiResponse, message?: string) => {
+    return ApiHandler.sendErrorResponse(
+      res,
+      404,
+      new ApiHandlerError('notFound', message),
+    );
+  };
+
+  public static internalError = (res: NextApiResponse, message?: string) => {
+    return ApiHandler.sendErrorResponse(
+      res,
+      500,
+      new ApiHandlerError('internal', message),
+    );
+  };
+
+  public static validationError = (res: NextApiResponse, message?: string) => {
+    return ApiHandler.sendErrorResponse(
+      res,
+      404,
+      new ApiHandlerError('validation', message),
+    );
+  };
 
   public static validateInput = async (
     res: NextApiResponse,
@@ -82,16 +108,16 @@ export abstract class ApiHandler implements IApiHandler {
     let isValid = false;
 
     try {
-      const validatedObject = await validationSchema.validate(input, {
+      await validationSchema.validate(input, {
         abortEarly: false,
       });
       isValid = true;
     } catch (error: any) {
       isValid = false;
       if (error.name === 'ValidationError') {
-        ApiHandler.badRequest(res, 'Validation Error', error.errors);
+        ApiHandler.validationError(res, error.errors.join(', '));
       } else {
-        ApiHandler.badRequest(res, 'Unexpected error during validation');
+        ApiHandler.validationError(res, 'Unexpected error during validation');
       }
     }
 
@@ -161,7 +187,74 @@ export abstract class ApiHandler implements IApiHandler {
   };
 }
 
-export type ApiHandlerResponse<T> = {
-  data: T;
-  error?: string;
+export class ApiHandlerResponse<T> {
+  constructor(public data?: T, public error?: ApiHandlerError) {
+    this.data = data;
+    this.error = error;
+  }
+}
+
+export const apiHandlerErrorTypes = {
+  validation: {
+    title: 'Validation error',
+  },
+  badRequest: {
+    title: 'Bad request',
+  },
+  notFound: {
+    title: 'Not found',
+  },
+  internal: {
+    title: 'Internal error',
+  },
+  unknown: {
+    title: 'Unexpected error',
+  },
+} as const;
+
+export type ApiHandlerErrorType = keyof typeof apiHandlerErrorTypes;
+
+export class ApiHandlerError {
+  public type: ApiHandlerErrorType;
+  public message?: string;
+  constructor(type: ApiHandlerErrorType, message?: string) {
+    this.type = type;
+    this.message = message;
+  }
+
+  public get title(): string {
+    let title: string;
+    if (
+      apiHandlerErrorTypes[this.type] &&
+      apiHandlerErrorTypes[this.type].title
+    ) {
+      title = apiHandlerErrorTypes[this.type].title;
+    } else {
+      title = apiHandlerErrorTypes.unknown.title;
+    }
+
+    return title;
+  }
+}
+
+const isApiHandlerErrorType = (type: unknown): type is ApiHandlerErrorType => {
+  return (
+    typeof type === 'string' &&
+    apiHandlerErrorTypes[type as ApiHandlerErrorType] !== undefined &&
+    apiHandlerErrorTypes[type as ApiHandlerErrorType].title !== undefined
+  );
 };
+
+export abstract class ApiHandlerErrorFactory {
+  public static parseError(error: any): ApiHandlerError {
+    if (
+      error &&
+      isApiHandlerErrorType(error.type) &&
+      (typeof error.message === 'string' || !error.message)
+    ) {
+      return new ApiHandlerError(error.type, error.message);
+    }
+
+    return new ApiHandlerError('unknown');
+  }
+}

@@ -1,12 +1,22 @@
-import { Alert, Snackbar } from '@mui/material';
-import { createContext, useCallback, useContext, useState } from 'react';
+import { Alert, AlertTitle, Snackbar } from '@mui/material';
+import {
+  Fragment,
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+} from 'react';
 
 type SnackbarAlertType = 'error' | 'warning' | 'info' | 'success';
 
-type SnackbarAlertContextValue = {
-  send: (message: string, type: SnackbarAlertType) => void;
-  success: (message: string) => void;
-  error: (message: string) => void;
+export type SnackbarAlertContextValue = {
+  send: (
+    message: string,
+    type: SnackbarAlertType,
+    description?: string,
+  ) => void;
+  success: (message: string, description?: string) => void;
+  error: (message: string, description?: string) => void;
   onClose: () => void;
   open: boolean;
   message?: string;
@@ -29,13 +39,18 @@ export const SnackbarAlertProvider = ({
 }: React.PropsWithChildren) => {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('Alert');
+  const [description, setDescription] = useState<string | undefined>(undefined);
   const [type, setType] = useState<SnackbarAlertType>('info');
 
-  const handleOpen = useCallback((message: string, type: SnackbarAlertType) => {
-    setOpen(true);
-    setMessage(message);
-    setType(type);
-  }, []);
+  const handleOpen = useCallback(
+    (message: string, type: SnackbarAlertType, description?: string) => {
+      setOpen(true);
+      setMessage(message);
+      setDescription(description);
+      setType(type);
+    },
+    [],
+  );
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -43,11 +58,28 @@ export const SnackbarAlertProvider = ({
 
   const value: SnackbarAlertContextValue = {
     send: handleOpen,
-    success: msg => handleOpen(msg, 'success'),
-    error: msg => handleOpen(msg, 'error'),
+    success: (msg, description) => handleOpen(msg, 'success', description),
+    error: (msg, description) => handleOpen(msg, 'error', description),
     onClose: handleClose,
     open,
     message,
+  };
+
+  const renderMessage = () => {
+    if (!message) {
+      return undefined;
+    }
+
+    if (description) {
+      return (
+        <Fragment>
+          <AlertTitle>{message}</AlertTitle>
+          {description}
+        </Fragment>
+      );
+    }
+
+    return message;
   };
 
   return (
@@ -61,7 +93,7 @@ export const SnackbarAlertProvider = ({
         sx={{ minWidth: '25%' }}
       >
         <Alert onClose={handleClose} severity={type} sx={{ width: '100%' }}>
-          {message}
+          {renderMessage()}
         </Alert>
       </Snackbar>
     </SnackbarAlertContext.Provider>

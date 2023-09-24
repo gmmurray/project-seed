@@ -1,11 +1,15 @@
+import { ApiHandlerErrorFactory } from '../types/apiHandler';
 import { AxiosError } from 'axios';
 
 export const handleAxiosError = (error: unknown) => {
+  let errorBody;
   if (error instanceof AxiosError) {
-    throw new Error(error.response?.data?.error ?? error.message);
+    errorBody = error.response?.data.error;
+  } else {
+    errorBody = undefined;
   }
 
-  throw error;
+  throw ApiHandlerErrorFactory.parseError(errorBody);
 };
 
 export async function performAxiosRequest<T>(
