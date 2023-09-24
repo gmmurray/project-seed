@@ -36,7 +36,7 @@ type MutationTypes = {
 };
 
 export const useCreateModelMutation = () =>
-  useMutationBuilder<MutationTypes['create'], string>(
+  useMutationBuilder<MutationTypes['create'], string | undefined>(
     [modelQueryKeys.all()],
     async model => {
       const res = await axios.post<ApiHandlerResponse<string>>(
