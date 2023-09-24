@@ -27,13 +27,13 @@ export default function RHFSelect<T extends string>({
     <Controller
       name={name}
       control={control}
-      render={({ field, fieldState }) => {
+      render={({ field: { ref, ...field }, fieldState }) => {
         return (
           <SelectInput
             {...field}
             label={label}
             options={options}
-            selectProps={inputProps}
+            selectProps={{ ...inputProps, ref }}
             error={!!fieldState.error}
             helperText={fieldState.error?.message ?? helperText}
           />

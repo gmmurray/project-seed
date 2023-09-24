@@ -41,7 +41,7 @@ export default function SelectInput<T extends string>({
   );
 
   return (
-    <FormControl fullWidth error={error}>
+    <FormControl fullWidth error={error} variant={selectProps?.variant}>
       <InputLabel>{label}</InputLabel>
       <Select
         {...(selectProps ?? {})}
