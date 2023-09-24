@@ -45,8 +45,10 @@ export default function SwitchInput({
           />
         }
       />
-      {helperText && (
-        <FormHelperText error={error}>{helperText}</FormHelperText>
+      {!!helperText && (
+        <FormHelperText error={error} sx={{ ml: 0 }}>
+          {helperText}
+        </FormHelperText>
       )}
     </FormControl>
   );
