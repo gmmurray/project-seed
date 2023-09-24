@@ -90,7 +90,7 @@ export abstract class ApiHandler implements IApiHandler {
   public static validationError = (res: NextApiResponse, message?: string) => {
     return ApiHandler.sendErrorResponse(
       res,
-      404,
+      400,
       new ApiHandlerError('validation', message),
     );
   };
